@@ -1,5 +1,5 @@
-name = "sensors"
-description = "Random sensor drivers"
+name = "drivers"
+description = "Random peripheral drivers"
 version = "0.1.0"
 
 authors = ["Jeremy Grosser"]
