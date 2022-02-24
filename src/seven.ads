@@ -3,6 +3,9 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
+--  Adafruit 16x8 LED Matrix Driver Backpack - HT16K33 Breakout
+--  https://www.adafruit.com/product/1427
+--
 with HAL; use HAL;
 with HT16K33;
 
