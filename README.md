@@ -1,1 +1,1 @@
-This crate is a collection of sensor drivers.
+This crate is an assorted collection of drivers.
