@@ -46,7 +46,7 @@
 with HAL.UART; use HAL.UART;
 with HAL; use HAL;
 
-package Plantower.PMS is
+package PMS is
 
    type Field is
       (Start, Length,
@@ -73,4 +73,4 @@ package Plantower.PMS is
       (Data : Frame)
       return UInt16;
 
-end Plantower.PMS;
+end PMS;

@@ -5,7 +5,7 @@
 --
 with Ada.Unchecked_Conversion;
 
-package body Plantower.PMS is
+package body PMS is
 
    function Name
       (F : Field)
@@ -78,4 +78,4 @@ package body Plantower.PMS is
       end if;
    end Receive;
 
-end Plantower.PMS;
+end PMS;
