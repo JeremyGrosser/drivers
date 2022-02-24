@@ -14,7 +14,7 @@
 --    PMS7003 (tested)
 --    PMSA003
 --
---  The module has a female socket that accepts 2x5 1.0mm pitch pins.
+--  The module has a female socket that accepts 2x5 1.27mm pitch pins.
 --  Samtec SFSD-05-28C-G-09.00-S is a compatible wire-to-board assembly.
 --
 --   ________---_
