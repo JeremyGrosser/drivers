@@ -1,0 +1,9 @@
+name = "sensors"
+description = "Random sensor drivers"
+version = "0.1.0"
+
+authors = ["Jeremy Grosser"]
+maintainers = ["Jeremy Grosser <jeremy@synack.me>"]
+maintainers-logins = ["JeremyGrosser"]
+[[depends-on]]  # Added by alr
+hal = "~0.1.0"  # Added by alr
