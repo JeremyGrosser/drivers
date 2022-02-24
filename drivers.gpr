@@ -21,7 +21,7 @@ project Drivers is
    Contracts_Checks : Enabled_Kind := External ("DRIVERS_CONTRACTS", "enabled");
 
    type Build_Kind is ("debug", "optimize");
-   Build_Mode : Build_Kind := External ("DRIVERS_BUILD_MODE", "optimize");
+   Build_Mode : Build_Kind := External ("DRIVERS_BUILD_MODE", "debug");
 
    Compile_Checks_Switches := ();
    case Compile_Checks is
@@ -66,7 +66,7 @@ project Drivers is
                             "-gnatn"); -- Enable inlining
       when "debug" =>
          Build_Switches := ("-g",   -- Debug info
-                            "-Og"); -- No optimization
+                            "-O0"); -- No optimization
    end case;
 
    package Compiler is
