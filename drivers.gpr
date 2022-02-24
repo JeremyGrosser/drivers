@@ -21,7 +21,7 @@ project Drivers is
    Contracts_Checks : Enabled_Kind := External ("DRIVERS_CONTRACTS", "enabled");
 
    type Build_Kind is ("debug", "optimize");
-   Build_Mode : Build_Kind := External ("DRIVERS_BUILD_MODE", "optimize");
+   Build_Mode : Build_Kind := External ("DRIVERS_BUILD_MODE", "debug");
 
    Compile_Checks_Switches := ();
    case Compile_Checks is
@@ -77,7 +77,9 @@ project Drivers is
         Style_Checks_Switches &
         Contracts_Switches &
         ("-gnatw.X", -- Disable warnings for No_Exception_Propagation
-         "-gnatQ");  -- Don't quit. Generate ALI and tree files even if illegalities
+         "-gnatQ",  -- Don't quit. Generate ALI and tree files even if illegalities
+         "-ffunction-sections",
+         "-fdata-sections");
    end Compiler;
 
    package Binder is
