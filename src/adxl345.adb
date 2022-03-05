@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2022 Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 package body ADXL345 is
    function To_Acceleration
       (G_Range : DATA_FORMAT_G_Range_Field;
