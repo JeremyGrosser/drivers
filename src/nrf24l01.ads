@@ -10,7 +10,7 @@ package NRF24L01 is
 
    procedure Initialize
       (This   : in out Device;
-       Pins   : NRF24L01_IO.Pins;
+       P      : Pins;
        Delays : not null HAL.Time.Any_Delays);
 
    procedure Reset
@@ -42,7 +42,7 @@ package NRF24L01 is
 private
 
    type Device is tagged record
-      Pins   : NRF24L01_IO.Pins;
+      P : NRF24L01_IO.Pins;
       Delays : HAL.Time.Any_Delays;
       Plus_Variant : Boolean;
    end record;
