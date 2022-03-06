@@ -65,6 +65,21 @@ package body NRF24L01_IO is
       P.CS.Set;
    end Flush_TX;
 
+   function Get_Status
+      (P : Pins)
+      return STATUS_Register
+   is
+      use HAL.SPI;
+      Data   : SPI_Data_8b (1 .. 1) := (1 => 2#1111_1111#); --  NOP, status is shifted out as the command is clocked
+      Status : SPI_Status;
+   begin
+      P.CS.Clear;
+      P.Port.Transmit (Data, Status, Timeout => 0);
+      P.Port.Receive (Data, Status, Timeout => 1);
+      P.CS.Set;
+      return To_STATUS_Register (Data (1));
+   end Get_Status;
+
    package body Register is
       procedure Read
          (P      : Pins;

@@ -52,6 +52,10 @@ package NRF24L01_IO is
    procedure Flush_RX (P : Pins);
    procedure Flush_TX (P : Pins);
 
+   function Get_Status
+      (P : Pins)
+      return STATUS_Register;
+
    generic
       Address : UInt8;
       type Register_Type is private;

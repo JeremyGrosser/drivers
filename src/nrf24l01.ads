@@ -69,6 +69,11 @@ package NRF24L01 is
        Data : out UInt8_Array)
    with Pre => Data'Length = Payload_Length (This);
 
+   function Available
+      (This : in out Device;
+       Pipe : Data_Pipe)
+       return Boolean;
+
 private
 
    type Device is tagged record

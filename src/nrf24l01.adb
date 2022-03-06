@@ -213,4 +213,10 @@ package body NRF24L01 is
       --  This.Delays.Delay_Milliseconds (1); --  Thce >= 10us
    end Receive;
 
+   function Available
+      (This : in out Device;
+       Pipe : Data_Pipe)
+       return Boolean
+   is (NRF24L01_IO.Get_Status (This.P).RX_P_NO = UInt3 (Pipe));
+
 end NRF24L01;
