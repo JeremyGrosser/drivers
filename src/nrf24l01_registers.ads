@@ -25,12 +25,12 @@ package NRF24L01_Registers is
       PRIM_RX     at 0 range 0 .. 0;
    end record;
 
-   type Data_Pipe is (P0, P1, P2, P3, P4, P5, Reserved_6, Reserved_7);
+   type Data_Pipe_Index is (P0, P1, P2, P3, P4, P5, Reserved_6, Reserved_7);
 
-   type EN_AA_Register is array (Data_Pipe) of Boolean
+   type EN_AA_Register is array (Data_Pipe_Index) of Boolean
       with Component_Size => 1, Size => 8;
 
-   type EN_RXADDR_Register is array (Data_Pipe) of Boolean
+   type EN_RXADDR_Register is array (Data_Pipe_Index) of Boolean
       with Component_Size => 1, Size => 8;
 
    type SETUP_AW_Register is (AW_3_Bytes, AW_4_Bytes, AW_5_Bytes)
@@ -110,7 +110,7 @@ package NRF24L01_Registers is
       RX_EMPTY at 0 range 0 .. 0;
    end record;
 
-   type DYNPD_Register is array (Data_Pipe) of Boolean
+   type DYNPD_Register is array (Data_Pipe_Index) of Boolean
       with Component_Size => 1, Size => 8;
 
    type FEATURE_Register is record

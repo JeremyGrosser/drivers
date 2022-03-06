@@ -1,7 +1,7 @@
 with NRF24L01_Registers; use NRF24L01_Registers;
-with HAL; use HAL;
 
 package body NRF24L01 is
+
    procedure Initialize
       (This   : in out Device;
        P      : Pins;
@@ -12,7 +12,14 @@ package body NRF24L01 is
       This.Delays := Delays;
       This.Reset;
 
-      CONFIG.Write (This.P, CONFIG_Register'(others => <>), Verify => True);
+      CONFIG.Write (This.P, CONFIG_Register'
+         (EN_CRC  => True,
+          CRCO    => True,
+          PRIM_RX => PRX,
+          PWR_UP  => False,
+          others  => <>),
+      Verify => True);
+      --  Verify the first write just to be sure the SPI interface is working.
 
       SETUP_RETR.Write (This.P, SETUP_RETR_Register'
          (ARD => 15,   --  Auto Retransmit Delay (1_500 microseconds between retransmits)
@@ -33,13 +40,9 @@ package body NRF24L01 is
           P1     => True,
           others => False));
       --  Set static payload size to max (32 bytes) for all pipes
-      RX_PW_P0.Write (This.P, 32);
-      RX_PW_P1.Write (This.P, 32);
-      RX_PW_P2.Write (This.P, 32);
-      RX_PW_P3.Write (This.P, 32);
-      RX_PW_P4.Write (This.P, 32);
-      RX_PW_P5.Write (This.P, 32);
+      Set_Payload_Length (This, 32);
       --  5 byte addressing
+      This.AW := 5;
       SETUP_AW.Write (This.P, AW_5_Bytes);
       --  Default to channel 76, which won't bleed into other bands.
       RF_CH.Write (This.P, 76);
@@ -54,15 +57,8 @@ package body NRF24L01 is
       NRF24L01_IO.Flush_TX (This.P);
 
       declare
-         C : CONFIG_Register :=
-            (PRIM_RX => PRX,
-             others  => <>);
+         C : CONFIG_Register := CONFIG.Read (This.P);
       begin
-         C.PRIM_RX := PRX;
-         CONFIG.Write (This.P, C, Verify => True);
-         C.EN_CRC := True;
-         C.CRCO := True;
-         CONFIG.Write (This.P, C, Verify => True);
          C.PWR_UP := True;
          CONFIG.Write (This.P, C);
          This.Delays.Delay_Milliseconds (5); --  Tpd2stdby
@@ -86,5 +82,97 @@ package body NRF24L01 is
       This.P.CE.Set;
       This.Delays.Delay_Milliseconds (Thce);
    end Reset;
+
+   procedure Set_Output_Power
+      (This : in out Device;
+       dBm  : Power_dBm)
+   is
+      Reg : RF_SETUP_Register := RF_SETUP.Read (This.P);
+   begin
+      case dBm is
+         when -18 => Reg.RF_PWR := 2#00#;
+         when -12 => Reg.RF_PWR := 2#01#;
+         when -6  => Reg.RF_PWR := 2#10#;
+         when 0   => Reg.RF_PWR := 2#11#;
+         when others =>
+            raise NRF_Error with "Invalid power amplifier setting";
+      end case;
+      RF_SETUP.Write (This.P, Reg);
+   end Set_Output_Power;
+
+   procedure Set_Payload_Length
+      (This  : in out Device;
+       Bytes : UInt6)
+   is
+   begin
+      RX_PW_P0.Write (This.P, RX_PW_Register (Bytes));
+      RX_PW_P1.Write (This.P, RX_PW_Register (Bytes));
+      RX_PW_P2.Write (This.P, RX_PW_Register (Bytes));
+      RX_PW_P3.Write (This.P, RX_PW_Register (Bytes));
+      RX_PW_P4.Write (This.P, RX_PW_Register (Bytes));
+      RX_PW_P5.Write (This.P, RX_PW_Register (Bytes));
+   end Set_Payload_Length;
+
+   procedure Configure_Receive
+      (This : in out Device;
+       Pipe : Data_Pipe;
+       Addr : Data_Pipe_Address)
+   is
+      AW : SETUP_AW_Register;
+      RA : UInt40;
+   begin
+      case Addr.Width is
+         when 3 =>
+            RA := UInt40 (Addr.Addr_3);
+            AW := AW_3_Bytes;
+         when 4 =>
+            RA := UInt40 (Addr.Addr_4);
+            AW := AW_4_Bytes;
+         when 5 =>
+            RA := Addr.Addr_5;
+            AW := AW_5_Bytes;
+      end case;
+
+      if Addr.Width /= This.AW then
+         SETUP_AW.Write (This.P, AW);
+         This.AW := Addr.Width;
+      end if;
+
+      case Pipe is
+         when 0 => RX_ADDR_P0.Write (This.P, RX_ADDR_P0_Register (RA));
+         when 1 => RX_ADDR_P1.Write (This.P, RX_ADDR_P1_Register (RA));
+         when 2 => RX_ADDR_P2.Write (This.P, RX_ADDR_P2_Register (RA and 16#FF#));
+         when 3 => RX_ADDR_P3.Write (This.P, RX_ADDR_P3_Register (RA and 16#FF#));
+         when 4 => RX_ADDR_P4.Write (This.P, RX_ADDR_P4_Register (RA and 16#FF#));
+         when 5 => RX_ADDR_P5.Write (This.P, RX_ADDR_P5_Register (RA and 16#FF#));
+      end case;
+   end Configure_Receive;
+
+   procedure Configure_Transmit
+      (This : in out Device;
+       Addr : Data_Pipe_Address)
+   is
+      TA : TX_ADDR_Register;
+      AW : SETUP_AW_Register;
+   begin
+      case Addr.Width is
+         when 3 =>
+            TA := TX_ADDR_Register (Addr.Addr_3);
+            AW := AW_3_Bytes;
+         when 4 =>
+            TA := TX_ADDR_Register (Addr.Addr_4);
+            AW := AW_4_Bytes;
+         when 5 =>
+            TA := TX_ADDR_Register (Addr.Addr_5);
+            AW := AW_5_Bytes;
+      end case;
+
+      if Addr.Width /= This.AW then
+         SETUP_AW.Write (This.P, AW);
+         This.AW := Addr.Width;
+      end if;
+
+      TX_ADDR.Write (This.P, TA);
+   end Configure_Transmit;
 
 end NRF24L01;

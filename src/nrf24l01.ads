@@ -1,5 +1,6 @@
 with NRF24L01_IO;
 with HAL.Time;
+with HAL; use HAL;
 
 package NRF24L01 is
 
@@ -16,34 +17,47 @@ package NRF24L01 is
    procedure Reset
       (This : in out Device);
 
-   type Channel is range 0 .. 125;
-   subtype Bits_Per_Second is Integer;
-   subtype Data_Rate is Bits_Per_Second
-      with Static_Predicate => Data_Rate in 250_000 | 1_000_000 | 2_000_000;
+   type Power_dBm is range -18 .. 0
+      with Static_Predicate => Power_dBm in -18 | -12 | -6 | 0;
 
-   --  procedure Set_Channel
-   --     (This : in out NRF24L01_Device;
-   --      Chan : Channel);
+   procedure Set_Output_Power
+      (This : in out Device;
+       dBm  : Power_dBm);
 
-   --  procedure Set_Data_Rate
-   --     (This : in out Device;
-   --      Rate : Data_Rate);
+   procedure Set_Payload_Length
+      (This  : in out Device;
+       Bytes : UInt6);
 
-   --  procedure Transmit
-   --     (This   : in out Device;
-   --      Data   : UInt8_Array;
-   --      Status : out Device_State);
+   type Data_Pipe is range 0 .. 5;
 
-   --  procedure Receive
-   --     (This   : in out Device;
-   --      Data   : out UInt8_Array;
-   --      Status : out Device_State);
+   type Address_Bytes is range 3 .. 5;
+   type Data_Pipe_Address
+      (Width : Address_Bytes)
+   is record
+      case Width is
+         when 3 => Addr_3 : UInt24;
+         when 4 => Addr_4 : UInt32;
+         when 5 => Addr_5 : UInt40;
+      end case;
+   end record;
+
+   --  Addresses for pipes P0 and P1 are up to 5 bytes wide.
+   --  Pipes P2 .. P5 share P1's prefix and only modify the lowest byte.
+   procedure Configure_Receive
+      (This : in out Device;
+       Pipe : Data_Pipe;
+       Addr : Data_Pipe_Address);
+
+   procedure Configure_Transmit
+      (This : in out Device;
+       Addr : Data_Pipe_Address);
 
 private
 
    type Device is tagged record
-      P : NRF24L01_IO.Pins;
-      Delays : HAL.Time.Any_Delays;
+      AW           : Address_Bytes;
+      P            : NRF24L01_IO.Pins;
+      Delays       : HAL.Time.Any_Delays;
       Plus_Variant : Boolean;
    end record;
 
