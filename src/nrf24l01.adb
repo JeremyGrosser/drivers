@@ -40,7 +40,7 @@ package body NRF24L01 is
           P1     => True,
           others => False));
       --  Set static payload size to max (32 bytes) for all pipes
-      Set_Payload_Length (This, 32);
+      Set_Payload_Length (This, NRF_Data_Length'Last);
       --  5 byte addressing
       This.AW := 5;
       SETUP_AW.Write (This.P, AW_5_Bytes);
@@ -73,14 +73,10 @@ package body NRF24L01 is
    is
       use HAL.Time;
       Tpor : constant := 100;
-      Thce : constant := 1;
-      --  Thce is actually 10 microseconds, but HAL.Time doesn't do that.
    begin
       This.P.CS.Set;
       This.P.CE.Clear;
       This.Delays.Delay_Milliseconds (Tpor);
-      This.P.CE.Set;
-      This.Delays.Delay_Milliseconds (Thce);
    end Reset;
 
    procedure Set_Output_Power
@@ -102,9 +98,10 @@ package body NRF24L01 is
 
    procedure Set_Payload_Length
       (This  : in out Device;
-       Bytes : UInt6)
+       Bytes : NRF_Data_Length)
    is
    begin
+      This.Length := Bytes;
       RX_PW_P0.Write (This.P, RX_PW_Register (Bytes));
       RX_PW_P1.Write (This.P, RX_PW_Register (Bytes));
       RX_PW_P2.Write (This.P, RX_PW_Register (Bytes));
@@ -113,11 +110,17 @@ package body NRF24L01 is
       RX_PW_P5.Write (This.P, RX_PW_Register (Bytes));
    end Set_Payload_Length;
 
+   function Payload_Length
+      (This : Device)
+      return NRF_Data_Length
+   is (This.Length);
+
    procedure Configure_Receive
       (This : in out Device;
        Pipe : Data_Pipe;
-       Addr : Data_Pipe_Address)
+       Addr : NRF_Address)
    is
+      EN : EN_RXADDR_Register;
       AW : SETUP_AW_Register;
       RA : UInt40;
    begin
@@ -146,15 +149,23 @@ package body NRF24L01 is
          when 4 => RX_ADDR_P4.Write (This.P, RX_ADDR_P4_Register (RA and 16#FF#));
          when 5 => RX_ADDR_P5.Write (This.P, RX_ADDR_P5_Register (RA and 16#FF#));
       end case;
+
+      EN := EN_RXADDR.Read (This.P);
+      EN (Data_Pipe_Index'Val (Natural (Pipe))) := True;
+      EN_RXADDR.Write (This.P, EN);
    end Configure_Receive;
 
    procedure Configure_Transmit
       (This : in out Device;
-       Addr : Data_Pipe_Address)
+       Addr : NRF_Address)
    is
       TA : TX_ADDR_Register;
       AW : SETUP_AW_Register;
    begin
+      --  Receive pipe 0 needs to have the same address as the transmitter in
+      --  order to handle auto-ack.
+      Configure_Receive (This, 0, Addr);
+
       case Addr.Width is
          when 3 =>
             TA := TX_ADDR_Register (Addr.Addr_3);
@@ -174,5 +185,32 @@ package body NRF24L01 is
 
       TX_ADDR.Write (This.P, TA);
    end Configure_Transmit;
+
+   procedure Receive
+      (This : in out Device;
+       Pipe : Data_Pipe;
+       Addr : out NRF_Address;
+       Data : out UInt8_Array)
+   is
+      pragma Unreferenced (Pipe);
+      pragma Unreferenced (Addr);
+      pragma Unreferenced (Data);
+      C : CONFIG_Register := CONFIG.Read (This.P);
+   begin
+      C.PRIM_RX := PRX;
+      C.PWR_UP := True;
+      CONFIG.Write (This.P, C);
+      This.Delays.Delay_Milliseconds (5); --  Tpd2stdby
+
+      --  Clear STATUS
+      STATUS.Write (This.P, STATUS_Register'
+         (RX_DR  => True,
+          TX_DS  => True,
+          MAX_RT => True,
+          others => <>));
+
+      This.P.CE.Set;
+      --  This.Delays.Delay_Milliseconds (1); --  Thce >= 10us
+   end Receive;
 
 end NRF24L01;
