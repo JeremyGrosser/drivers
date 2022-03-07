@@ -18,34 +18,42 @@ package body NRF24L01 is
           PRIM_RX => PRX,
           PWR_UP  => False,
           others  => <>),
-      Verify => True);
+        Verify => True);
       --  Verify the first write just to be sure the SPI interface is working.
 
       SETUP_RETR.Write (This.P, SETUP_RETR_Register'
          (ARD => 15,   --  Auto Retransmit Delay (1_500 microseconds between retransmits)
           ARC => 15)); --  Auto Retransmit Count (up to 15 times)
+
       RF_SETUP.Write (This.P, RF_SETUP_Register'
          (CONT_WAVE  => False,
           RF_DR_LOW  => False,
           PLL_LOCK   => False,
           RF_DR_HIGH => False,   --  1 Mbps
           RF_PWR     => 2#11#)); --  Max transmit power
+
       --  Disable dynamic payloads
       DYNPD.Write (This.P, DYNPD_Register'(others => False));
+
       --  Enable auto-ack on all pipes
       EN_AA.Write (This.P, EN_AA_Register'(others => True));
+
       --  Open RX pipes 0 and 1
       EN_RXADDR.Write (This.P, EN_RXADDR_Register'
          (P0     => True,
           P1     => True,
           others => False));
+
       --  Set static payload size to max (32 bytes) for all pipes
       Set_Payload_Length (This, NRF_Data_Length'Last);
+
       --  5 byte addressing
       This.AW := 5;
       SETUP_AW.Write (This.P, AW_5_Bytes);
+
       --  Default to channel 76, which won't bleed into other bands.
       RF_CH.Write (This.P, 76);
+
       --  Clear status flags
       STATUS.Write (This.P, STATUS_Register'
          (RX_DR  => True,
