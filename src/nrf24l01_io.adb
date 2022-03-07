@@ -83,43 +83,24 @@ package body NRF24L01_IO is
    package body Register is
       procedure Read
          (P      : Pins;
-          Value  : in out Register_Array;
-          Status : in out IO_Status)
-      is
-      begin
-         Value := (others => 0);
-         SPI_Transfer (P, Address, Value, Status);
-      end Read;
-
-      procedure Read
-         (P      : Pins;
           Value  : out Register_Type;
           Status : in out IO_Status)
       is
-         V : Register_Array;
+         V : Register_Array := (others => 0);
       begin
-         Read (P, V, Status);
+         SPI_Transfer (P, Address, V, Status);
          Value := From_Register_Array (V);
       end Read;
-
-      procedure Write
-         (P      : Pins;
-          Value  : in out Register_Array;
-          Status : in out IO_Status)
-      is
-         W_REGISTER : constant UInt8 := 2#0010_0000#;
-      begin
-         SPI_Transfer (P, Address or W_REGISTER, Value, Status);
-      end Write;
 
       procedure Write
          (P      : Pins;
           Value  : Register_Type;
           Status : in out IO_Status)
       is
+         W_REGISTER : constant UInt8 := 2#0010_0000#;
          V : Register_Array := To_Register_Array (Value);
       begin
-         Write (P, V, Status);
+         SPI_Transfer (P, Address or W_REGISTER, V, Status);
       end Write;
 
       function Read

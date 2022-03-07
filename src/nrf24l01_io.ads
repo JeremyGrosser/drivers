@@ -94,16 +94,6 @@ package NRF24L01_IO is
          (Source => Register_Array,
           Target => Register_Type);
 
-      procedure Read
-         (P      : Pins;
-          Value  : in out Register_Array;
-          Status : in out IO_Status);
-
-      procedure Write
-         (P      : Pins;
-          Value  : in out Register_Array;
-          Status : in out IO_Status);
-
    end Register;
 
 end NRF24L01_IO;
