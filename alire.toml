@@ -5,5 +5,10 @@ version = "0.1.0"
 authors = ["Jeremy Grosser"]
 maintainers = ["Jeremy Grosser <jeremy@synack.me>"]
 maintainers-logins = ["JeremyGrosser"]
+
 [[depends-on]]  # Added by alr
 hal = "~0.1.0"  # Added by alr
+[[depends-on]]  # Added by alr
+synack_misc = "~0.1.0"  # Added by alr
+[[pins]]  # Added by alr
+synack_misc = { url='https://github.com/JeremyGrosser/synack_misc' }   # Added by alr
