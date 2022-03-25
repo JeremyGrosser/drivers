@@ -1,3 +1,4 @@
+with HAL.Time; use HAL.Time;
 with HAL.I2C; use HAL.I2C;
 with HAL; use HAL;
 
@@ -8,8 +9,9 @@ package SGP30 is
    type SGP30_Status is (Ok, I2C_Error, Checksum_Error);
 
    type Device
-      (Port : not null Any_I2C_Port;
-       Addr : I2C_Address)
+      (Port   : not null Any_I2C_Port;
+       Addr   : I2C_Address;
+       Delays : Any_Delays)
    is tagged record
       Bus_Status : I2C_Status;
       Status     : SGP30_Status := Ok;
@@ -84,11 +86,6 @@ private
        Reg  : UInt16)
        return UInt16;
 
-   procedure Write_48
-      (This  : in out Device;
-       Reg   : UInt16;
-       Value : UInt48);
-
    procedure Write_32
       (This  : in out Device;
        Reg   : UInt16;
@@ -106,5 +103,9 @@ private
    function CRC_8
       (Data : UInt8_Array)
       return UInt8;
+
+   function To_I2C_Data
+      (X : UInt16)
+      return I2C_Data;
 
 end SGP30;

@@ -23,6 +23,11 @@ package body SGP30 is
       return True;
    end Verify_Checksum;
 
+   function To_I2C_Data
+      (X : UInt16)
+      return I2C_Data
+   is (I2C_Data'(UInt8 (Shift_Right (X, 8)), UInt8 (X and 16#FF#)));
+
    procedure Soft_Reset
       (This : in out Device)
    is
@@ -34,6 +39,7 @@ package body SGP30 is
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
       end if;
+      This.Delays.Delay_Milliseconds (10);
    end Soft_Reset;
 
    function Read_48
@@ -44,12 +50,20 @@ package body SGP30 is
       Data : I2C_Data (1 .. 9);
       I    : Positive := Data'First;
    begin
-      This.Port.Mem_Read
-         (Addr          => This.Addr,
-          Mem_Addr      => Reg,
-          Mem_Addr_Size => Memory_Size_16b,
-          Data          => Data,
-          Status        => This.Bus_Status);
+      This.Port.Master_Transmit
+         (Addr   => This.Addr,
+          Data   => To_I2C_Data (Reg),
+          Status => This.Bus_Status);
+
+      if This.Bus_Status /= Ok then
+         This.Status := I2C_Error;
+         return 0;
+      end if;
+
+      This.Port.Master_Receive
+         (Addr   => This.Addr,
+          Data   => Data,
+          Status => This.Bus_Status);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -78,12 +92,22 @@ package body SGP30 is
       Data : I2C_Data (1 .. 6);
       I    : Positive := Data'First;
    begin
-      This.Port.Mem_Read
-         (Addr          => This.Addr,
-          Mem_Addr      => Reg,
-          Mem_Addr_Size => Memory_Size_16b,
-          Data          => Data,
-          Status        => This.Bus_Status);
+      This.Port.Master_Transmit
+         (Addr   => This.Addr,
+          Data   => To_I2C_Data (Reg),
+          Status => This.Bus_Status);
+
+      if This.Bus_Status /= Ok then
+         This.Status := I2C_Error;
+         return 0;
+      end if;
+
+      This.Delays.Delay_Milliseconds (12);
+
+      This.Port.Master_Receive
+         (Addr   => This.Addr,
+          Data   => Data,
+          Status => This.Bus_Status);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -109,10 +133,20 @@ package body SGP30 is
       Data : I2C_Data (1 .. 3);
       I    : Positive := Data'First;
    begin
-      This.Port.Mem_Read
+      This.Port.Master_Transmit
          (Addr          => This.Addr,
-          Mem_Addr      => Reg,
-          Mem_Addr_Size => Memory_Size_16b,
+          Data          => To_I2C_Data (Reg),
+          Status        => This.Bus_Status);
+
+      if This.Bus_Status /= Ok then
+         This.Status := I2C_Error;
+         return 0;
+      end if;
+
+      This.Delays.Delay_Milliseconds (10);
+
+      This.Port.Master_Receive
+         (Addr          => This.Addr,
           Data          => Data,
           Status        => This.Bus_Status);
 
@@ -130,34 +164,6 @@ package body SGP30 is
       end if;
    end Read_16;
 
-   procedure Write_48
-      (This  : in out Device;
-       Reg   : UInt16;
-       Value : UInt48)
-   is
-      Data : I2C_Data (1 .. 9);
-   begin
-      Data (1) := UInt8 (Shift_Right (UInt64 (Value), 40) and 16#FF#);
-      Data (2) := UInt8 (Shift_Right (UInt64 (Value), 32) and 16#FF#);
-      Data (3) := CRC_8 (Data (1 .. 2));
-      Data (4) := UInt8 (Shift_Right (UInt64 (Value), 24) and 16#FF#);
-      Data (5) := UInt8 (Shift_Right (UInt64 (Value), 16) and 16#FF#);
-      Data (6) := CRC_8 (Data (4 .. 5));
-      Data (7) := UInt8 (Shift_Right (UInt64 (Value), 8) and 16#FF#);
-      Data (8) := UInt8 (Shift_Right (UInt64 (Value), 0) and 16#FF#);
-      Data (9) := CRC_8 (Data (7 .. 8));
-
-      This.Port.Mem_Write
-         (Addr          => This.Addr,
-          Mem_Addr      => Reg,
-          Mem_Addr_Size => Memory_Size_16b,
-          Data          => Data,
-          Status        => This.Bus_Status);
-      if This.Bus_Status /= Ok then
-         This.Status := I2C_Error;
-      end if;
-   end Write_48;
-
    procedure Write_32
       (This  : in out Device;
        Reg   : UInt16;
@@ -172,12 +178,22 @@ package body SGP30 is
       Data (5) := UInt8 (Shift_Right (Value, 0) and 16#FF#);
       Data (6) := CRC_8 (Data (4 .. 5));
 
-      This.Port.Mem_Write
-         (Addr          => This.Addr,
-          Mem_Addr      => Reg,
-          Mem_Addr_Size => Memory_Size_16b,
-          Data          => Data,
-          Status        => This.Bus_Status);
+      This.Port.Master_Transmit
+         (Addr   => This.Addr,
+          Data   => To_I2C_Data (Reg),
+          Status => This.Bus_Status);
+
+      if This.Bus_Status /= Ok then
+         This.Status := I2C_Error;
+      end if;
+
+      This.Delays.Delay_Milliseconds (10);
+
+      This.Port.Master_Transmit
+         (Addr   => This.Addr,
+          Data   => Data,
+          Status => This.Bus_Status);
+
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
       end if;
@@ -194,12 +210,22 @@ package body SGP30 is
       Data (2) := UInt8 (Shift_Right (Value, 0) and 16#FF#);
       Data (3) := CRC_8 (Data (1 .. 2));
 
-      This.Port.Mem_Write
-         (Addr          => This.Addr,
-          Mem_Addr      => Reg,
-          Mem_Addr_Size => Memory_Size_16b,
-          Data          => Data,
-          Status        => This.Bus_Status);
+      This.Port.Master_Transmit
+         (Addr   => This.Addr,
+          Data   => To_I2C_Data (Reg),
+          Status => This.Bus_Status);
+
+      if This.Bus_Status /= Ok then
+         This.Status := I2C_Error;
+      end if;
+
+      This.Delays.Delay_Milliseconds (10);
+
+      This.Port.Master_Transmit
+         (Addr   => This.Addr,
+          Data   => Data,
+          Status => This.Bus_Status);
+
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
       end if;
@@ -220,6 +246,7 @@ package body SGP30 is
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
       end if;
+      This.Delays.Delay_Milliseconds (10);
    end Write_Command;
 
    procedure Init_Air_Quality
@@ -244,7 +271,12 @@ package body SGP30 is
    function Get_Baseline
       (This : in out Device)
       return Natural
-   is (Natural (This.Read_32 (16#2015#)));
+   is
+      Result : UInt32;
+   begin
+      Result := This.Read_32 (16#2015#);
+      return Natural (Result);
+   end Get_Baseline;
 
    procedure Set_Baseline
       (This     : in out Device;
@@ -265,17 +297,32 @@ package body SGP30 is
    function Measure_Test
       (This : in out Device)
       return UInt16
-   is (This.Read_16 (16#2032#));
+   is
+      Result : UInt16;
+   begin
+      Result := This.Read_16 (16#2032#);
+      return Result;
+   end Measure_Test;
 
    function Get_Feature_Set_Version
       (This : in out Device)
       return UInt16
-   is (This.Read_16 (16#202F#));
+   is
+      Result : UInt16;
+   begin
+      Result := This.Read_16 (16#202F#);
+      return Result;
+   end Get_Feature_Set_Version;
 
    function Measure_Raw_Signals
       (This : in out Device)
       return Natural
-   is (Natural (This.Read_32 (16#2050#)));
+   is
+      Result : UInt32;
+   begin
+      Result := This.Read_32 (16#2050#);
+      return Natural (Result);
+   end Measure_Raw_Signals;
 
    function Get_Serial_Id
       (This : in out Device)
