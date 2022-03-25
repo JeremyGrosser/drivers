@@ -70,6 +70,7 @@ project Drivers is
    end case;
 
    package Compiler is
+      for Local_Configuration_Pragmas use "gnat.adc";
       for Default_Switches ("Ada") use
         Compile_Checks_Switches &
         Build_Switches &
