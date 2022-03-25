@@ -2,7 +2,10 @@ with Checksum;
 
 package body SGP30 is
 
-   CRC_Poly : constant UInt8 := 16#31#;
+   function CRC_8
+      (Data : UInt8_Array)
+      return UInt8
+   is (Checksum.CRC_8 (Data, Poly => 16#31#));
 
    function Verify_Checksum
       (Data : UInt8_Array)
@@ -12,7 +15,7 @@ package body SGP30 is
       I : Positive := Data'First;
    begin
       while I <= Data'Last loop
-         if Checksum.CRC_8 (Data (I .. I + 1), Poly => CRC_Poly) /= Data (I + 2) then
+         if CRC_8 (Data (I .. I + 1)) /= Data (I + 2) then
             return False;
          end if;
          I := I + 3;
@@ -136,13 +139,13 @@ package body SGP30 is
    begin
       Data (1) := UInt8 (Shift_Right (UInt64 (Value), 40) and 16#FF#);
       Data (2) := UInt8 (Shift_Right (UInt64 (Value), 32) and 16#FF#);
-      Data (3) := Checksum.CRC_8 (Data (1 .. 2), Poly => CRC_Poly);
+      Data (3) := CRC_8 (Data (1 .. 2));
       Data (4) := UInt8 (Shift_Right (UInt64 (Value), 24) and 16#FF#);
       Data (5) := UInt8 (Shift_Right (UInt64 (Value), 16) and 16#FF#);
-      Data (6) := Checksum.CRC_8 (Data (4 .. 5), Poly => CRC_Poly);
+      Data (6) := CRC_8 (Data (4 .. 5));
       Data (7) := UInt8 (Shift_Right (UInt64 (Value), 8) and 16#FF#);
       Data (8) := UInt8 (Shift_Right (UInt64 (Value), 0) and 16#FF#);
-      Data (9) := Checksum.CRC_8 (Data (7 .. 8), Poly => CRC_Poly);
+      Data (9) := CRC_8 (Data (7 .. 8));
 
       This.Port.Mem_Write
          (Addr          => This.Addr,
@@ -164,10 +167,10 @@ package body SGP30 is
    begin
       Data (1) := UInt8 (Shift_Right (Value, 24) and 16#FF#);
       Data (2) := UInt8 (Shift_Right (Value, 16) and 16#FF#);
-      Data (3) := Checksum.CRC_8 (Data (1 .. 2), Poly => CRC_Poly);
+      Data (3) := CRC_8 (Data (1 .. 2));
       Data (4) := UInt8 (Shift_Right (Value, 8) and 16#FF#);
       Data (5) := UInt8 (Shift_Right (Value, 0) and 16#FF#);
-      Data (6) := Checksum.CRC_8 (Data (4 .. 5), Poly => CRC_Poly);
+      Data (6) := CRC_8 (Data (4 .. 5));
 
       This.Port.Mem_Write
          (Addr          => This.Addr,
@@ -189,7 +192,7 @@ package body SGP30 is
    begin
       Data (1) := UInt8 (Shift_Right (Value, 8) and 16#FF#);
       Data (2) := UInt8 (Shift_Right (Value, 0) and 16#FF#);
-      Data (3) := Checksum.CRC_8 (Data (1 .. 2), Poly => CRC_Poly);
+      Data (3) := CRC_8 (Data (1 .. 2));
 
       This.Port.Mem_Write
          (Addr          => This.Addr,

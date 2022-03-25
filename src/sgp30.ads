@@ -103,4 +103,8 @@ private
       (This : in out Device;
        Reg  : UInt16);
 
+   function CRC_8
+      (Data : UInt8_Array)
+      return UInt8;
+
 end SGP30;
