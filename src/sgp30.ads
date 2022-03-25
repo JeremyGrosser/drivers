@@ -39,11 +39,11 @@ package SGP30 is
 
    function Get_Baseline
       (This : in out Device)
-      return Natural;
+      return UInt32;
 
    procedure Set_Baseline
       (This     : in out Device;
-       Baseline : Natural);
+       Baseline : UInt32);
 
    procedure Set_Humidity
       (This     : in out Device;
@@ -59,7 +59,7 @@ package SGP30 is
 
    function Measure_Raw_Signals
       (This : in out Device)
-      return Natural;
+      return UInt32;
 
    function Get_Serial_Id
       (This : in out Device)

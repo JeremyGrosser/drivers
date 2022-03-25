@@ -270,20 +270,15 @@ package body SGP30 is
 
    function Get_Baseline
       (This : in out Device)
-      return Natural
-   is
-      Result : UInt32;
-   begin
-      Result := This.Read_32 (16#2015#);
-      return Natural (Result);
-   end Get_Baseline;
+      return UInt32
+   is (This.Read_32 (16#2015#));
 
    procedure Set_Baseline
       (This     : in out Device;
-       Baseline : Natural)
+       Baseline : UInt32)
    is
    begin
-      This.Write_32 (16#201E#, UInt32 (Baseline));
+      This.Write_32 (16#201E#, Baseline);
    end Set_Baseline;
 
    procedure Set_Humidity
@@ -297,32 +292,17 @@ package body SGP30 is
    function Measure_Test
       (This : in out Device)
       return UInt16
-   is
-      Result : UInt16;
-   begin
-      Result := This.Read_16 (16#2032#);
-      return Result;
-   end Measure_Test;
+   is (This.Read_16 (16#2032#));
 
    function Get_Feature_Set_Version
       (This : in out Device)
       return UInt16
-   is
-      Result : UInt16;
-   begin
-      Result := This.Read_16 (16#202F#);
-      return Result;
-   end Get_Feature_Set_Version;
+   is (This.Read_16 (16#202F#));
 
    function Measure_Raw_Signals
       (This : in out Device)
-      return Natural
-   is
-      Result : UInt32;
-   begin
-      Result := This.Read_32 (16#2050#);
-      return Natural (Result);
-   end Measure_Raw_Signals;
+      return UInt32
+   is (This.Read_32 (16#2050#));
 
    function Get_Serial_Id
       (This : in out Device)
