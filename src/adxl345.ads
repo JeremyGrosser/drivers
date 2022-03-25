@@ -4,7 +4,6 @@
 --  SPDX-License-Identifier: BSD-3-Clause
 --
 with ADXL345_SPI;
-with System;
 with HAL;
 
 package ADXL345 is

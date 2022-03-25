@@ -53,7 +53,6 @@ package body SGP30 is
        return UInt48
    is
       Data : I2C_Data (1 .. 9);
-      I    : Positive := Data'First;
    begin
       This.Port.Master_Transmit
          (Addr   => This.Addr,
@@ -95,7 +94,6 @@ package body SGP30 is
        return UInt32
    is
       Data : I2C_Data (1 .. 6);
-      I    : Positive := Data'First;
    begin
       This.Port.Master_Transmit
          (Addr   => This.Addr,
@@ -136,7 +134,6 @@ package body SGP30 is
        return UInt16
    is
       Data : I2C_Data (1 .. 3);
-      I    : Positive := Data'First;
    begin
       This.Port.Master_Transmit
          (Addr          => This.Addr,

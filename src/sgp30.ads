@@ -16,7 +16,7 @@ package SGP30 is
    type Device
       (Port   : not null Any_I2C_Port;
        Addr   : I2C_Address;
-       Delays : Any_Delays)
+       Delays : not null Any_Delays)
    is tagged record
       Bus_Status : I2C_Status;
       Status     : SGP30_Status := Ok;
