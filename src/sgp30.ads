@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2022 Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with HAL.Time; use HAL.Time;
 with HAL.I2C; use HAL.I2C;
 with HAL; use HAL;
