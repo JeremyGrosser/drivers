@@ -12,7 +12,7 @@ package ST7789 is
    type ST7789_Screen
       (CS   : not null HAL.GPIO.Any_GPIO_Point;
        DC   : not null HAL.GPIO.Any_GPIO_Point;
-       RST  : not null HAL.GPIO.Any_GPIO_Point;
+       RST  : HAL.GPIO.Any_GPIO_Point;
        Port : not null HAL.SPI.Any_SPI_Port;
        Time : not null HAL.Time.Any_Delays)
    is tagged null record;

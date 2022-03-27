@@ -58,10 +58,15 @@ package body ST7789 is
    is
       subtype U8 is HAL.UInt8_Array;
    begin
-      This.RST.Clear;
+      if This.RST /= null then
+         This.RST.Clear;
+      end if;
       This.CS.Clear;
       This.Time.Delay_Milliseconds (50);
-      This.RST.Set;
+
+      if This.RST /= null then
+         This.RST.Set;
+      end if;
       This.CS.Set;
       This.Time.Delay_Milliseconds (50);
 
