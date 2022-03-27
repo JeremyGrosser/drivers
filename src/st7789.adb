@@ -56,6 +56,7 @@ package body ST7789 is
    procedure Initialize
       (This : in out ST7789_Screen)
    is
+      use HAL.GPIO;
       subtype U8 is HAL.UInt8_Array;
    begin
       if This.RST /= null then
