@@ -1,81 +1,92 @@
--- BMP280 pressure and temperature sensor services
+--  BMP280 pressure and temperature sensor services
 
--- Copyright (C)2016-2021, Philip Munts, President, Munts AM Corp.
+--  Copyright (C)2016-2021, Philip Munts, President, Munts AM Corp.
+--  Copyright (C)2022, Jeremy Grosser <jeremy@synack.me>
 --
--- Redistribution and use in source and binary forms, with or without
--- modification, are permitted provided that the following conditions are met:
+--  Redistribution and use in source and binary forms, with or without
+--  modification, are permitted provided that the following conditions are met:
 --
--- * Redistributions of source code must retain the above copyright notice,
---   this list of conditions and the following disclaimer.
+--  * Redistributions of source code must retain the above copyright notice,
+--    this list of conditions and the following disclaimer.
 --
--- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
--- AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
--- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
--- ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
--- LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
--- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
--- SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
--- INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
--- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
--- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
--- POSSIBILITY OF SUCH DAMAGE.
+--  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+--  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+--  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+--  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+--  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+--  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+--  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+--  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+--  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+--  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+--  POSSIBILITY OF SUCH DAMAGE.
 
-WITH I2C;
-WITH Pressure;
-WITH Temperature;
+with HAL; use HAL;
+with HAL.I2C;
 
-PACKAGE BMP280 IS
+package BMP280 is
 
-  TYPE DeviceSubclass IS NEW Temperature.InputInterface AND
-    Pressure.InputInterface WITH PRIVATE;
+   type Device
+      (Port : not null HAL.I2C.Any_I2C_Port;
+       Addr : HAL.I2C.I2C_Address)
+   is tagged private;
 
-  TYPE Device IS ACCESS DeviceSubclass;
+   type Pascals is new Float;
+   type Celsius is new Float;
 
-  -- BMP280 sensor object constructor
+   procedure Initialize
+      (This : in out Device);
 
-  FUNCTION Create(bus : NOT NULL I2C.Bus; addr : I2C.Address) RETURN Device;
+   function Pressure
+      (This : in out Device)
+      return Pascals;
 
-  -- Read BMP280 pressure
+   function Temperature
+      (This : in out Device)
+      return Celsius;
 
-  FUNCTION Get(Self : IN OUT DeviceSubclass) RETURN Pressure.Pascals;
+private
 
-  -- Read BMP280 temperature
+   type Int16 is range -2 ** 15 .. 2 ** 15 - 1
+      with Size => 16;
 
-  FUNCTION Get(Self : IN OUT DeviceSubclass) RETURN Temperature.Celsius;
+   type Device
+      (Port : not null HAL.I2C.Any_I2C_Port;
+       Addr : HAL.I2C.I2C_Address)
+   is tagged record
+      --  Calibration data follows
+      dig_T1 : UInt16;
+      dig_T2 : Int16;
+      dig_T3 : Int16;
+      dig_P1 : UInt16;
+      dig_P2 : Int16;
+      dig_P3 : Int16;
+      dig_P4 : Int16;
+      dig_P5 : Int16;
+      dig_P6 : Int16;
+      dig_P7 : Int16;
+      dig_P8 : Int16;
+      dig_P9 : Int16;
+   end record;
 
-  MaxSpeed : CONSTANT := I2C.SpeedFast;
+   procedure Write_Register
+      (This : in out Device;
+       Addr : UInt8;
+       Data : UInt8);
 
-PRIVATE
+   procedure Read_Registers
+      (This : in out Device;
+       Addr : UInt8;
+       Data : out HAL.I2C.I2C_Data);
 
-  -- Define signed and unsigned 16-bit types for calibration data
+   function To_Celsius
+      (This : in out Device;
+       Data : HAL.I2C.I2C_Data)
+       return Celsius;
 
-  TYPE Signed16 IS RANGE -32768 .. 32767;
-  FOR Signed16'Size USE 16;
+   function To_Pascals
+      (This : in out Device;
+       Data : HAL.I2C.I2C_Data)
+       return Pascals;
 
-  TYPE Unsigned16 IS MOD 2**16;
-  FOR Unsigned16'Size USE 16;
-
-  -- Finish defining Device
-
-  TYPE DeviceSubclass IS NEW Temperature.InputInterface AND
-    Pressure.InputInterface WITH RECORD
-    bus     : I2C.Bus;
-    address : I2C.Address;
-
-    -- Calibration data follows
-
-    dig_T1 : Unsigned16;
-    dig_T2 : Signed16;
-    dig_T3 : Signed16;
-    dig_P1 : Unsigned16;
-    dig_P2 : Signed16;
-    dig_P3 : Signed16;
-    dig_P4 : Signed16;
-    dig_P5 : Signed16;
-    dig_P6 : Signed16;
-    dig_P7 : Signed16;
-    dig_P8 : Signed16;
-    dig_P9 : Signed16;
-  END RECORD;
-
-END BMP280;
+end BMP280;
