@@ -28,48 +28,24 @@ with Ada.Unchecked_Conversion;
 package body BMP280 is
    use HAL.I2C;
 
-   REG_CALIB0  : constant UInt8 := 16#88#;
-   REG_ID      : constant UInt8 := 16#D0#;
-   REG_RESET   : constant UInt8 := 16#E0#;
-   REG_STATUS  : constant UInt8 := 16#F3#;
-   REG_CONTROL : constant UInt8 := 16#F4#;
-   REG_CONFIG  : constant UInt8 := 16#F5#;
-   REG_PMSB    : constant UInt8 := 16#F7#;
-   REG_PLSB    : constant UInt8 := 16#F8#;
-   REG_PXLSB   : constant UInt8 := 16#F9#;
-   REG_TMSB    : constant UInt8 := 16#FA#;
-   REG_TLSB    : constant UInt8 := 16#FB#;
-   REG_TXLSB   : constant UInt8 := 16#FC#;
+   REG_CALIB0  : constant := 16#88#;
+   REG_ID      : constant := 16#D0#;
+   REG_RESET   : constant := 16#E0#;
+   REG_STATUS  : constant := 16#F3#;
+   REG_CONTROL : constant := 16#F4#;
+   REG_CONFIG  : constant := 16#F5#;
+   REG_PMSB    : constant := 16#F7#;
+   REG_PLSB    : constant := 16#F8#;
+   REG_PXLSB   : constant := 16#F9#;
+   REG_TMSB    : constant := 16#FA#;
+   REG_TLSB    : constant := 16#FB#;
+   REG_TXLSB   : constant := 16#FC#;
 
    --  Control register settings
    CONTROL_SLEEP  : constant UInt8 := 2#001_001_00#; --  Sleep mode
    CONTROL_SAMPLE : constant UInt8 := 2#001_001_01#; --  Force sample mode
 
    --  Write to a single BMP280 register
-   procedure Write_Register
-      (This : in out Device;
-       Addr : UInt8;
-       Data : UInt8)
-   is
-      Cmd    : constant I2C_Data (1 .. 2) := (Addr, Data);
-      Status : I2C_Status;
-   begin
-      This.Port.Master_Transmit (This.Addr, Cmd, Status);
-   end Write_Register;
-
-   --  Read from one or more BMP280 registers
-   procedure Read_Registers
-      (This : in out Device;
-       Addr : UInt8;
-       Data : out I2C_Data)
-   is
-      Status : I2C_Status;
-      Cmd    : constant I2C_Data (1 .. 1) := (1 => Addr);
-   begin
-      This.Port.Master_Transmit (This.Addr, Cmd, Status);
-      This.Port.Master_Receive (This.Addr, Data, Status);
-   end Read_Registers;
-
    --  Define conversions for calibration data
    function To_Int16 is new Ada.Unchecked_Conversion
       (Source => UInt16,
@@ -84,23 +60,58 @@ package body BMP280 is
       return Int16
    is (To_Int16 (To_UInt16 (LSB, MSB)));
 
-   procedure Initialize
-      (This : in out Device)
+   procedure Busy_Wait
+      (This : in out Device;
+       Status : out I2C_Status)
    is
-      Status           : I2C_Data (1 .. 1);
+      S    : I2C_Status;
+      Busy : I2C_Data (1 .. 1);
+   begin
+      loop
+         This.Port.Mem_Read (This.Addr, REG_STATUS, Memory_Size_8b, Busy, S, This.Timeout);
+         if S /= Ok then
+            Status := S;
+            return;
+         end if;
+         exit when (Busy (1) and 16#03#) = 0;
+      end loop;
+   end Busy_Wait;
+
+   procedure Initialize
+      (This   : in out Device;
+       Status : out I2C_Status;
+       Timeout : Natural := 10)
+   is
+      S : I2C_Status;
       Calibration_Data : I2C_Data (1 .. 26);
    begin
-      This.Write_Register (REG_CONTROL, CONTROL_SLEEP);
-      This.Write_Register (REG_CONFIG, 2#0000_0000#);
+      This.Timeout := Timeout;
+
+      This.Port.Mem_Write (This.Addr, REG_CONTROL, Memory_Size_8b, I2C_Data'(1 => CONTROL_SLEEP), S, This.Timeout);
+      if S /= Ok then
+         Status := S;
+         return;
+      end if;
+
+      This.Port.Mem_Write (This.Addr, REG_CONFIG, Memory_Size_8b, I2C_Data'(1 => 0), S, This.Timeout);
+      if S /= Ok then
+         Status := S;
+         return;
+      end if;
 
       --  Wait while the BMP280 is busy
-      loop
-         This.Read_Registers (REG_STATUS, Status);
-         exit when (Status (1) and 16#03#) = 0;
-      end loop;
+      This.Busy_Wait (S);
+      if S /= Ok then
+         Status := S;
+         return;
+      end if;
 
       --  Read calibration data
-      This.Read_Registers (REG_CALIB0, Calibration_Data);
+      This.Port.Mem_Read (This.Addr, REG_CALIB0, Memory_Size_8b, Calibration_Data, S, This.Timeout);
+      if S /= Ok then
+         Status := S;
+         return;
+      end if;
 
       --  Extract calibration data
       This.dig_T1 := To_UInt16 (Calibration_Data (1), Calibration_Data (2));
@@ -115,6 +126,7 @@ package body BMP280 is
       This.dig_P7 := To_Int16 (Calibration_Data (19), Calibration_Data (20));
       This.dig_P8 := To_Int16 (Calibration_Data (21), Calibration_Data (22));
       This.dig_P9 := To_Int16 (Calibration_Data (23), Calibration_Data (24));
+      Status := Ok;
    end Initialize;
 
    --  Convert 20-bit temperature sample to Celsius
@@ -159,8 +171,8 @@ package body BMP280 is
 
    --  Convert 20-bit pressure sample to Pascals
    function To_Pascals
-      (This : in out Device;
-       Data : I2C_Data)
+      (This   : in out Device;
+       Data   : I2C_Data)
        return Pascals
    is
       adc_P : Integer;
@@ -207,49 +219,71 @@ package body BMP280 is
 
    --  Read BMP280 pressure
    function Pressure
-      (This : in out Device)
+      (This   : in out Device;
+       Status : out I2C_Status)
       return Pascals
    is
-      Status : I2C_Data (1 .. 1);
+      S : I2C_Status;
       Data   : I2C_Data (1 .. 6);
    begin
       --  Initiate sampling
-      This.Write_Register (REG_CONTROL, CONTROL_SAMPLE);
+      This.Port.Mem_Write (This.Addr, REG_CONTROL, Memory_Size_8b, I2C_Data'(1 => CONTROL_SAMPLE), S, This.Timeout);
+      if S /= Ok then
+         Status := S;
+         return 0.0;
+      end if;
 
       --  Wait while the BMP280 is busy
-      loop
-         This.Read_Registers (REG_STATUS, Status);
-         exit when (Status (1) and 16#03#) = 16#00#;
-      end loop;
+      This.Busy_Wait (S);
+      if S /= Ok then
+         Status := S;
+         return 0.0;
+      end if;
 
       --  Read sample data
-      This.Read_Registers (REG_PMSB, Data);
+      This.Port.Mem_Read (This.Addr, REG_PMSB, Memory_Size_8b, Data, S, This.Timeout);
+      if S /= Ok then
+         Status := S;
+         return 0.0;
+      end if;
 
       --  Convert to Pascals
+      Status := Ok;
       return This.To_Pascals (Data);
    end Pressure;
 
    --  Read BMP280 temperature
    function Temperature
-      (This : in out Device)
+      (This   : in out Device;
+       Status : out I2C_Status)
       return Celsius
    is
-      Status : I2C_Data (1 .. 1);
-      Data   : I2C_Data (1 .. 6);
+      S : I2C_Status;
+      Data : I2C_Data (1 .. 6);
    begin
       --  Initiate sampling
-      This.Write_Register (REG_CONTROL, CONTROL_SAMPLE);
+      This.Port.Mem_Write (This.Addr, REG_CONTROL, Memory_Size_8b, I2C_Data'(1 => CONTROL_SAMPLE), S, This.Timeout);
+      if S /= Ok then
+         Status := S;
+         return 0.0;
+      end if;
 
       --  Wait while the BMP280 is busy
-      loop
-         This.Read_Registers (REG_STATUS, Status);
-         exit when (Status (1) and 16#03#) = 16#00#;
-      end loop;
+      This.Busy_Wait (S);
+      if S /= Ok then
+         Status := S;
+         return 0.0;
+      end if;
 
       --  Read sample data
-      This.Read_Registers (REG_PMSB, Data);
+      This.Port.Mem_Read (This.Addr, REG_PMSB, Memory_Size_8b, Data, S, This.Timeout);
+      if S /= Ok then
+         Status := S;
+         return 0.0;
+      end if;
 
       --  Convert to Pascals
+      Status := Ok;
       return This.To_Celsius (Data);
    end Temperature;
 

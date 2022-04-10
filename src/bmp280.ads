@@ -37,14 +37,18 @@ package BMP280 is
    type Celsius is new Float;
 
    procedure Initialize
-      (This : in out Device);
+      (This : in out Device;
+       Status : out HAL.I2C.I2C_Status;
+       Timeout : Natural := 10);
 
    function Pressure
-      (This : in out Device)
+      (This   : in out Device;
+       Status : out HAL.I2C.I2C_Status)
       return Pascals;
 
    function Temperature
-      (This : in out Device)
+      (This   : in out Device;
+       Status : out HAL.I2C.I2C_Status)
       return Celsius;
 
 private
@@ -69,17 +73,8 @@ private
       dig_P7 : Int16;
       dig_P8 : Int16;
       dig_P9 : Int16;
+      Timeout : Natural;
    end record;
-
-   procedure Write_Register
-      (This : in out Device;
-       Addr : UInt8;
-       Data : UInt8);
-
-   procedure Read_Registers
-      (This : in out Device;
-       Addr : UInt8;
-       Data : out HAL.I2C.I2C_Data);
 
    function To_Celsius
       (This : in out Device;
@@ -90,5 +85,9 @@ private
       (This : in out Device;
        Data : HAL.I2C.I2C_Data)
        return Pascals;
+
+   procedure Busy_Wait
+      (This   : in out Device;
+       Status : out HAL.I2C.I2C_Status);
 
 end BMP280;
