@@ -3,7 +3,6 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
---
 --  nRF24L01+ 2.4 GHz GFSK modem
 --
 --  This driver disables the Enhanced ShockBurst™ acknowledgement and checksum
@@ -15,7 +14,7 @@
 --  frames get to the right place. Add a header to your data if this is
 --  important to your application.
 --
---  Data whitening is probably a good idea too.
+--  Frequency hopping, data whitening and parity are good ideas.
 --
 with Ada.Unchecked_Conversion;
 with HAL.SPI; use HAL.SPI;
@@ -57,6 +56,12 @@ package NRF24L01 is
    procedure Initialize
       (This : in out Device);
 
+   procedure Interrupt
+      (This : in out Device);
+   --  Interrupt must be called upon the falling edge of the IRQ pin. Failure
+   --  to do so will make Receive stop working and Transmit may keep the
+   --  amplifier turned on for too long and and damage your chip.
+
    procedure Set_Channel
       (This : in out Device;
        MHz  : NRF_Channel);
@@ -85,12 +90,6 @@ package NRF24L01 is
       return Natural;
    --  Number of frames waiting in the receive FIFO.
    --  Don't call Receive if Data_Ready = 0
-
-   procedure Interrupt
-      (This : in out Device);
-   --  Interrupt must be called upon the falling edge of the IRQ pin. Failure
-   --  to do so will make Receive stop working and Transmit may keep the
-   --  amplifier turned on for too long and and damage your chip.
 
 private
 
