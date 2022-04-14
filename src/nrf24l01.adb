@@ -161,7 +161,7 @@ package body NRF24L01 is
       A : UInt8_Array (1 .. 5) := (others => 0);
    begin
       This.W_REGISTER (SETUP_AW, UInt8 (Addr.Width) - 2);
-      A (Addr.Width .. 5) := Addr.Addr;
+      A (6 - Addr.Width .. 5) := Addr.Addr;
       This.W_REGISTER (TX_ADDR, A);
    end Set_Transmit_Address;
 
@@ -172,7 +172,7 @@ package body NRF24L01 is
       A : UInt8_Array (1 .. 5) := (others => 0);
    begin
       This.W_REGISTER (SETUP_AW, UInt8 (Addr.Width) - 2);
-      A (Addr.Width .. 5) := Addr.Addr;
+      A (6 - Addr.Width .. 5) := Addr.Addr;
       This.W_REGISTER (RX_ADDR_P1, A);
    end Set_Receive_Address;
 
