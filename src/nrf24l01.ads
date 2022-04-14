@@ -205,9 +205,6 @@ private
       PRIM_RX     at 0 range 0 .. 0;
    end record;
 
-   function To_CONFIG_Register is new Ada.Unchecked_Conversion
-      (Source => UInt8,
-       Target => CONFIG_Register);
    function To_UInt8 is new Ada.Unchecked_Conversion
       (Source => CONFIG_Register,
        Target => UInt8);
@@ -231,26 +228,6 @@ private
    function To_UInt8 is new Ada.Unchecked_Conversion
       (Source => RF_SETUP_Register,
        Target => UInt8);
-
-   type FIFO_STATUS_Register is record
-      TX_REUSE : Boolean;
-      TX_FULL  : Boolean;
-      TX_EMPTY : Boolean;
-      RX_FULL  : Boolean;
-      RX_EMPTY : Boolean;
-   end record
-      with Size => 8;
-   for FIFO_STATUS_Register use record
-      TX_REUSE at 0 range 6 .. 6;
-      TX_FULL  at 0 range 5 .. 5;
-      TX_EMPTY at 0 range 4 .. 4;
-      RX_FULL  at 0 range 1 .. 1;
-      RX_EMPTY at 0 range 0 .. 0;
-   end record;
-
-   function To_FIFO_STATUS_Register is new Ada.Unchecked_Conversion
-      (Source => UInt8,
-       Target => FIFO_STATUS_Register);
 
    procedure SPI_Transfer
       (This : in out Device;
