@@ -135,7 +135,6 @@ package body NRF24L01 is
       This.W_REGISTER (SETUP_RETR, 16#00#);  --  Disable retransmit
       This.W_REGISTER (EN_AA, 16#00#);       --  Disable auto ack on all pipes
       This.W_REGISTER (EN_RXADDR, 16#00#);   --  Disable RX on all pipes
-      This.W_REGISTER (SETUP_AW, 16#01#);    --  Set address width (3 bytes)
       This.W_REGISTER (RF_CH, 76);           --  Set frequency 2476 MHz
       This.W_REGISTER (CONFIG, To_UInt8 (CONFIG_Register'
          (MASK_RX_DR    => False,
@@ -147,14 +146,6 @@ package body NRF24L01 is
           PRIM_RX       => PTX)));
    end Initialize;
 
-   procedure Set_Address_Width
-      (This : in out Device;
-       Width : NRF_Address_Width)
-   is
-   begin
-      This.W_REGISTER (SETUP_AW, UInt8 (Width) - 2);
-   end Set_Address_Width;
-
    procedure Set_Channel
       (This : in out Device;
        MHz  : NRF_Channel)
@@ -162,6 +153,28 @@ package body NRF24L01 is
    begin
       This.W_REGISTER (RF_CH, UInt8 (Natural (MHz) - Natural (NRF_Channel'First)));
    end Set_Channel;
+
+   procedure Set_Transmit_Address
+      (This : in out Device;
+       Addr : NRF_Address)
+   is
+      A : UInt8_Array (1 .. 5) := (others => 0);
+   begin
+      This.W_REGISTER (SETUP_AW, UInt8 (Addr.Width) - 2);
+      A (Addr.Width .. 5) := Addr.Addr;
+      This.W_REGISTER (TX_ADDR, A);
+   end Set_Transmit_Address;
+
+   procedure Set_Receive_Address
+      (This : in out Device;
+       Addr : NRF_Address)
+   is
+      A : UInt8_Array (1 .. 5) := (others => 0);
+   begin
+      This.W_REGISTER (SETUP_AW, UInt8 (Addr.Width) - 2);
+      A (Addr.Width .. 5) := Addr.Addr;
+      This.W_REGISTER (RX_ADDR_P1, A);
+   end Set_Receive_Address;
 
    procedure Transmit
       (This  : in out Device;
@@ -172,7 +185,7 @@ package body NRF24L01 is
    begin
       This.CE.Clear;
 
-      This.W_REGISTER (TX_ADDR, Addr);
+      This.Set_Transmit_Address (Addr);
 
       This.W_REGISTER (RF_SETUP, To_UInt8 (RF_SETUP_Register'
          (CONT_WAVE  => False,
@@ -219,10 +232,9 @@ package body NRF24L01 is
           PWR_UP        => True,
           PRIM_RX       => PRX)));
 
-      --  Configure pipe 1
-      This.W_REGISTER (RX_PW_P1, UInt8 (Length));
-      This.W_REGISTER (RX_ADDR_P1, Addr);
+      This.Set_Receive_Address (Addr);
       This.W_REGISTER (EN_RXADDR, 16#02#);
+      This.W_REGISTER (RX_PW_P1, UInt8 (Length));
 
       This.FLUSH_RX;
       This.Clear_Status;

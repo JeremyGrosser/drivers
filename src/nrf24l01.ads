@@ -30,10 +30,13 @@ package NRF24L01 is
        CE   : HAL.GPIO.Any_GPIO_Point)
    is tagged private;
 
-   subtype NRF_Address is UInt8_Array (1 .. 5);
+   subtype NRF_Address_Width is Positive range 3 .. 5;
 
-   type NRF_Address_Width is range 3 .. 5;
-   --  default 3. Upper bytes are ignored if < 5
+   type NRF_Address
+      (Width : NRF_Address_Width)
+   is record
+      Addr : UInt8_Array (1 .. Width);
+   end record;
 
    type NRF_Channel is range 2_400 .. 2_527;
    --  MHz, default 2_476
@@ -53,10 +56,6 @@ package NRF24L01 is
 
    procedure Initialize
       (This : in out Device);
-
-   procedure Set_Address_Width
-      (This  : in out Device;
-       Width : NRF_Address_Width);
 
    procedure Set_Channel
       (This : in out Device;
@@ -292,5 +291,13 @@ private
 
    procedure Clear_Status
       (This : in out Device);
+
+   procedure Set_Transmit_Address
+      (This : in out Device;
+       Addr : NRF_Address);
+
+   procedure Set_Receive_Address
+      (This : in out Device;
+       Addr : NRF_Address);
 
 end NRF24L01;
