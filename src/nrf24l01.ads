@@ -70,11 +70,16 @@ package NRF24L01 is
       (This : in out Device;
        Rate : NRF_Data_Rate);
 
+   function Is_Transmitting
+      (This : Device)
+      return Boolean;
+
    procedure Transmit
       (This   : in out Device;
        Addr   : NRF_Address;
        Data   : UInt8_Array;
-       Power  : NRF_Transmit_Power := Max_Power);
+       Power  : NRF_Transmit_Power := Max_Power)
+   with Pre => not This.Is_Transmitting;
 
    procedure Listen
       (This   : in out Device;

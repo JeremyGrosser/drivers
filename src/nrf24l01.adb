@@ -209,6 +209,11 @@ package body NRF24L01 is
       This.CE.Set;
    end Transmit;
 
+   function Is_Transmitting
+      (This : Device)
+      return Boolean
+   is (This.Mode = Transmitting);
+
    procedure Listen
       (This   : in out Device;
        Addr   : NRF_Address;
@@ -263,10 +268,7 @@ package body NRF24L01 is
    function Data_Ready
       (This : in out Device)
       return Natural
-   is
-   begin
-      return This.RX_DR;
-   end Data_Ready;
+   is (This.RX_DR);
 
    procedure Interrupt
       (This : in out Device)
