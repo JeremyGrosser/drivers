@@ -151,7 +151,13 @@ package body NRF24L01 is
        MHz  : NRF_Channel)
    is
    begin
+      if This.Mode /= Idle then
+         This.CE.Clear;
+      end if;
       This.W_REGISTER (RF_CH, UInt8 (Natural (MHz) - Natural (NRF_Channel'First)));
+      if This.Mode /= Idle then
+         This.CE.Set;
+      end if;
    end Set_Channel;
 
    procedure Set_Transmit_Address
