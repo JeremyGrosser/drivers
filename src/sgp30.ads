@@ -105,10 +105,6 @@ private
       (This : in out Device;
        Reg  : UInt16);
 
-   function CRC_8
-      (Data : UInt8_Array)
-      return UInt8;
-
    function To_I2C_Data
       (X : UInt16)
       return I2C_Data;

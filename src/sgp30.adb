@@ -3,14 +3,12 @@
 --
 --  SPDX-License-Identifier: BSD-3-Clause
 --
-with Checksum;
+with CRC;
 
 package body SGP30 is
-
-   function CRC_8
-      (Data : UInt8_Array)
-      return UInt8
-   is (Checksum.CRC_8 (Data, Poly => 16#31#));
+   package CRC_8 is new CRC
+      (Word       => HAL.UInt8,
+       Word_Array => HAL.UInt8_Array);
 
    function Verify_Checksum
       (Data : UInt8_Array)
@@ -20,7 +18,7 @@ package body SGP30 is
       I : Positive := Data'First;
    begin
       while I <= Data'Last loop
-         if CRC_8 (Data (I .. I + 1)) /= Data (I + 2) then
+         if CRC_8.Calculate (Data (I .. I + 1), Initial => 16#FF#) /= Data (I + 2) then
             return False;
          end if;
          I := I + 3;
@@ -175,10 +173,10 @@ package body SGP30 is
    begin
       Data (1) := UInt8 (Shift_Right (Value, 24) and 16#FF#);
       Data (2) := UInt8 (Shift_Right (Value, 16) and 16#FF#);
-      Data (3) := CRC_8 (Data (1 .. 2));
+      Data (3) := CRC_8.Calculate (Data (1 .. 2), Initial => 16#FF#);
       Data (4) := UInt8 (Shift_Right (Value, 8) and 16#FF#);
       Data (5) := UInt8 (Shift_Right (Value, 0) and 16#FF#);
-      Data (6) := CRC_8 (Data (4 .. 5));
+      Data (6) := CRC_8.Calculate (Data (4 .. 5), Initial => 16#FF#);
 
       This.Port.Master_Transmit
          (Addr   => This.Addr,
@@ -210,7 +208,7 @@ package body SGP30 is
    begin
       Data (1) := UInt8 (Shift_Right (Value, 8) and 16#FF#);
       Data (2) := UInt8 (Shift_Right (Value, 0) and 16#FF#);
-      Data (3) := CRC_8 (Data (1 .. 2));
+      Data (3) := CRC_8.Calculate (Data (1 .. 2), Initial => 16#FF#);
 
       This.Port.Master_Transmit
          (Addr   => This.Addr,
@@ -324,4 +322,6 @@ package body SGP30 is
       This.Status := Ok;
    end Clear_Error;
 
+begin
+   CRC_8.Poly := 16#31#;
 end SGP30;
