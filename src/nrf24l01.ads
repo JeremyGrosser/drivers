@@ -90,11 +90,17 @@ package NRF24L01 is
       (This : in out Device;
        Data : out UInt8_Array);
 
+   procedure Power_Down
+      (This : in out Device);
+
    function Data_Ready
       (This : in out Device)
       return Natural;
    --  Number of frames waiting in the receive FIFO.
    --  Don't call Receive if Data_Ready = 0
+
+   procedure Poll
+      (This : in out Device);
 
 private
 

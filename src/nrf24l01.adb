@@ -314,4 +314,42 @@ package body NRF24L01 is
       end case;
    end Set_Data_Rate;
 
+   procedure Power_Down
+      (This : in out Device)
+   is
+   begin
+      This.CE.Clear;
+      This.Clear_Status;
+      This.Mode := Idle;
+      This.W_REGISTER (CONFIG, To_UInt8 (CONFIG_Register'
+         (MASK_RX_DR    => True,
+          MASK_TX_DS    => True,
+          MASK_MAX_RT   => True,
+          EN_CRC        => False,
+          CRCO          => False,
+          PWR_UP        => False,
+          PRIM_RX       => PRX)));
+   end Power_Down;
+
+   procedure Poll
+      (This : in out Device)
+   is
+      SR : STATUS_Register;
+   begin
+      case This.Mode is
+         when Transmitting =>
+            This.NOP (SR);
+            if SR.TX_DS then
+               This.Interrupt;
+            end if;
+         when Receiving =>
+            This.NOP (SR);
+            if SR.RX_DR then
+               This.Interrupt;
+            end if;
+         when Idle =>
+            null;
+      end case;
+   end Poll;
+
 end NRF24L01;
