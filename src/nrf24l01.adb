@@ -13,11 +13,11 @@ package body NRF24L01 is
    begin
       --  One byte at a time, we don't know how deep the receive FIFO is
       for I in Data'Range loop
-         This.Port.Transmit (Data (I .. I), Status, Timeout => 1);
+         This.Port.Transmit (Data (I .. I), Status, Timeout => 10);
          if Status /= Ok then
             raise Program_Error with "SPI Transmit error";
          end if;
-         This.Port.Receive (Data (I .. I), Status, Timeout => 1);
+         This.Port.Receive (Data (I .. I), Status, Timeout => 10);
          if Status /= Ok then
             raise Program_Error with "SPI Receive error";
          end if;
