@@ -1,0 +1,15 @@
+name = "accel"
+description = "Shiny new project"
+version = "0.1.0-dev"
+
+authors = ["Jeremy Grosser"]
+maintainers = ["Jeremy Grosser <jeremy@synack.me>"]
+maintainers-logins = ["JeremyGrosser"]
+
+executables = ["accel"]
+[[depends-on]]
+drivers = "~0.1.0"
+[[pins]]
+drivers = { path='../../../drivers' }
+[[depends-on]]
+pico_bsp = "^1.5.0"
