@@ -21,9 +21,6 @@ package ADXL345 is
    procedure Read
       (X, Y, Z : out Float);
 
-   procedure Set_Offset
-      (X, Y, Z : Int16);
-
    type Register is
       (DEVID,
        THRESH_TAP,
@@ -218,8 +215,5 @@ package ADXL345 is
       FIFO_TRIG   at 0 range 7 .. 7;
       Entries     at 0 range 0 .. 5;
    end record;
-
-   function Status
-      return INT_SOURCE_Register;
 
 end ADXL345;

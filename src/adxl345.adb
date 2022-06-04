@@ -114,21 +114,4 @@ package body ADXL345 is
       Z := Float (RZ) * G_Range;
    end Read;
 
-   function Status
-      return INT_SOURCE_Register
-   is
-      function Get_INT_SOURCE is new Get (INT_SOURCE, INT_SOURCE_Register);
-   begin
-      return Get_INT_SOURCE;
-   end Status;
-
-   procedure Set_Offset
-      (X, Y, Z : Int16)
-   is
-      type Data_Array is array (1 .. 3) of Int16
-         with Component_Size => 16;
-      procedure Set_OFS is new Set (OFSX, Data_Array);
-   begin
-      Set_OFS ((X, Y, Z));
-   end Set_Offset;
 end ADXL345;
