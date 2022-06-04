@@ -78,7 +78,7 @@ package body ADXL345 is
       Set_FIFO_CTL
          ((FIFO_MODE => Stream,
            Trigger   => False,
-           Samples   => 2));
+           Samples   => 1));
 
       Set_POWER_CTL
          ((Link         => False,
