@@ -7,7 +7,7 @@ maintainers = ["Jeremy Grosser <jeremy@synack.me>"]
 maintainers-logins = ["JeremyGrosser"]
 
 [[depends-on]]
-hal = "~0.1.0"
+hal = "~0.3.0"
 synack_misc = "~0.1.0"
 
 [[pins]]
