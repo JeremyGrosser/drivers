@@ -32,17 +32,21 @@ package body PMS is
       end case;
    end Name;
 
-   function Calculate_Checksum
-      (Data : Frame)
-      return UInt16
+   function Valid_Checksum
+      (Raw_Data : UInt8_Array)
+      return Boolean
    is
-      Sum : UInt16 := 0;
+      Check : UInt16;
+      Sum   : UInt16 := 0;
    begin
-      for I in Start .. Reserved loop
-         Sum := Sum + Data (I);
+      Check := Shift_Left (UInt16 (Raw_Data (Raw_Data'Last - 1)), 8);
+      Check := Check or UInt16 (Raw_Data (Raw_Data'Last));
+
+      for I in Raw_Data'First .. Raw_Data'Last - 2 loop
+         Sum := Sum + UInt16 (Raw_Data (I));
       end loop;
-      return Sum;
-   end Calculate_Checksum;
+      return Sum = Check;
+   end Valid_Checksum;
 
    procedure Receive
       (Port    : not null Any_UART_Port;
@@ -57,13 +61,16 @@ package body PMS is
       function To_Frame is new Ada.Unchecked_Conversion
          (Raw_Frame, Frame);
 
-      S  : UART_Status;
       RF : Raw_Frame;
       F  : Frame;
    begin
-      Port.Receive (RF, S, Timeout);
-      Status := S;
-      if S /= Ok then
+      Port.Receive (RF, Status, Timeout);
+      if Status /= Ok then
+         return;
+      end if;
+
+      if not Valid_Checksum (UInt8_Array (RF)) then
+         Status := Err_Error;
          return;
       end if;
 
@@ -72,10 +79,6 @@ package body PMS is
          F (I) := Byte_Swap (F (I));
       end loop;
       Data := F;
-
-      if F (Checksum) /= Calculate_Checksum (F) then
-         Status := Err_Error;
-      end if;
    end Receive;
 
 end PMS;

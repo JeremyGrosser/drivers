@@ -69,8 +69,8 @@ package PMS is
        Status  : out UART_Status;
        Timeout : Natural := 1_000);
 
-   function Calculate_Checksum
-      (Data : Frame)
-      return UInt16;
+   function Valid_Checksum
+      (Raw_Data : UInt8_Array)
+      return Boolean;
 
 end PMS;
