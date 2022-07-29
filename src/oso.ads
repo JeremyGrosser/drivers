@@ -113,7 +113,6 @@ private
    --  Copyright (c) 2022 Joey Castillo for Oddly Specific Objects
    --  SPDX-License-Identifier: MIT
    --
-   --  Modified '7' and '9' to remove unwanted segments.
    --  Added others value displaying top and bottom segments for missing characters
 
    type Character_Lookup is array (Character) of UInt8
@@ -143,7 +142,7 @@ private
       '6' => 2#1101_0111#,
       '7' => 2#1000_1100#,
       '8' => 2#1101_1111#,
-      '9' => 2#1000_1110#,
+      '9' => 2#1100_1111#,
       '<' => 2#0001_0001#,
       '=' => 2#0000_0011#,
       '>' => 2#0000_0101#,
