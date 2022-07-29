@@ -33,26 +33,52 @@ package OSO is
       Cursor : Position := Position'First;
    end record;
 
+   procedure Update
+      (This : in out LCD_Wing);
+
+   --  Update writes the Buffer to the LCD. The following procedures only
+   --  modify the Buffer. It's up to you to call Update afterwards.
+
+   procedure Clear
+      (This : in out LCD_Wing);
+   --  Turn off all segments and reset Cursor to Position 1
+
+   procedure Fill
+      (This : in out LCD_Wing);
+   --  Turn on all segments
+
    procedure Set_Indicators
       (This  : in out LCD_Wing;
        Value : Indicators);
 
-   procedure Clear
-      (This : in out LCD_Wing);
+   procedure Set_Decimal
+      (This : in out LCD_Wing;
+       Pos  : Position;
+       On   : Boolean);
+   --  Sets the decimal point segment. At Pos = 1, this sets the leading dash
+   --  instead
 
-   procedure Fill
-      (This : in out LCD_Wing);
-
-   procedure Update
-      (This : in out LCD_Wing);
+   procedure Set
+      (This : in out LCD_Wing;
+       Pos  : Position;
+       Ch   : Character);
+   --  Sets an alphanumeric character
 
    procedure Put
       (This : in out LCD_Wing;
        Ch   : Character);
+   --  Sets the character at the Position indicated by Cursor, then increments
+   --  the Cursor
 
    procedure Put
       (This : in out LCD_Wing;
        S    : String);
+   --  Fill all 5 positions with characters.
+   --  If the first character is '-', the leading dash segment is shown.
+   --  If a ':' is at (S'First + 2), the Colon indicator is turned on.
+   --  The '.' character enables the decimal point segment at the cursor position.
+   --  If S contains more than 5 alphanumeric characters, the last character will be overwritten.
+   --  Unrepresentable characters are displayed with the top and bottom segments. (H and A in the diagram below)
 
 private
 
@@ -149,10 +175,5 @@ private
       'Y' => 2#0100_1111#,
       'Z' => 2#1001_1001#,
       others => 2#1000_0001#);
-
-   procedure Set
-      (This : in out LCD_Wing;
-       Pos  : Position;
-       Ch   : Character);
 
 end OSO;
