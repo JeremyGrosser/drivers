@@ -110,7 +110,7 @@ private
    --  Character set originally from
    --  https://github.com/joeycastillo/OSO_Arduino_LCD
    --
-   --  Copyright (c) 2012 Joey Castillo for Oddly Specific Objects
+   --  Copyright (c) 2022 Joey Castillo for Oddly Specific Objects
    --  SPDX-License-Identifier: MIT
    --
    --  Modified '7' and '9' to remove unwanted segments.
