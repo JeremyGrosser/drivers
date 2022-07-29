@@ -68,7 +68,9 @@ package OSO is
       (This : in out LCD_Wing;
        Ch   : Character);
    --  Sets the character at the Position indicated by Cursor, then increments
-   --  the Cursor
+   --  the Cursor.
+   --  Only UPPER CASE characters are supported.
+   --  Unrepresentable characters are displayed as the top and bottom segments. (H and A in the diagram below)
 
    procedure Put
       (This : in out LCD_Wing;
@@ -78,7 +80,6 @@ package OSO is
    --  If a ':' is at (S'First + 2), the Colon indicator is turned on.
    --  The '.' character enables the decimal point segment at the cursor position.
    --  If S contains more than 5 alphanumeric characters, the last character will be overwritten.
-   --  Unrepresentable characters are displayed with the top and bottom segments. (H and A in the diagram below)
 
 private
 
