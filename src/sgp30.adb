@@ -36,9 +36,10 @@ package body SGP30 is
    is
    begin
       This.Port.Master_Transmit
-         (Addr   => 16#00#,
-          Data   => I2C_Data'(1 => 16#06#),
-          Status => This.Bus_Status);
+         (Addr    => 16#00#,
+          Data    => I2C_Data'(1 => 16#06#),
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
       end if;
@@ -53,9 +54,10 @@ package body SGP30 is
       Data : I2C_Data (1 .. 9);
    begin
       This.Port.Master_Transmit
-         (Addr   => This.Addr,
-          Data   => To_I2C_Data (Reg),
-          Status => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => To_I2C_Data (Reg),
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -63,9 +65,10 @@ package body SGP30 is
       end if;
 
       This.Port.Master_Receive
-         (Addr   => This.Addr,
-          Data   => Data,
-          Status => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => Data,
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -94,9 +97,10 @@ package body SGP30 is
       Data : I2C_Data (1 .. 6);
    begin
       This.Port.Master_Transmit
-         (Addr   => This.Addr,
-          Data   => To_I2C_Data (Reg),
-          Status => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => To_I2C_Data (Reg),
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -106,9 +110,10 @@ package body SGP30 is
       This.Delays.Delay_Milliseconds (12);
 
       This.Port.Master_Receive
-         (Addr   => This.Addr,
-          Data   => Data,
-          Status => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => Data,
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -134,9 +139,10 @@ package body SGP30 is
       Data : I2C_Data (1 .. 3);
    begin
       This.Port.Master_Transmit
-         (Addr          => This.Addr,
-          Data          => To_I2C_Data (Reg),
-          Status        => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => To_I2C_Data (Reg),
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -146,9 +152,10 @@ package body SGP30 is
       This.Delays.Delay_Milliseconds (10);
 
       This.Port.Master_Receive
-         (Addr          => This.Addr,
-          Data          => Data,
-          Status        => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => Data,
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -179,9 +186,10 @@ package body SGP30 is
       Data (6) := CRC_8.Calculate (Data (4 .. 5), Initial => 16#FF#);
 
       This.Port.Master_Transmit
-         (Addr   => This.Addr,
-          Data   => To_I2C_Data (Reg),
-          Status => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => To_I2C_Data (Reg),
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -190,9 +198,10 @@ package body SGP30 is
       This.Delays.Delay_Milliseconds (10);
 
       This.Port.Master_Transmit
-         (Addr   => This.Addr,
-          Data   => Data,
-          Status => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => Data,
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -211,9 +220,10 @@ package body SGP30 is
       Data (3) := CRC_8.Calculate (Data (1 .. 2), Initial => 16#FF#);
 
       This.Port.Master_Transmit
-         (Addr   => This.Addr,
-          Data   => To_I2C_Data (Reg),
-          Status => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => To_I2C_Data (Reg),
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -222,9 +232,10 @@ package body SGP30 is
       This.Delays.Delay_Milliseconds (10);
 
       This.Port.Master_Transmit
-         (Addr   => This.Addr,
-          Data   => Data,
-          Status => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => Data,
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
 
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
@@ -240,9 +251,10 @@ package body SGP30 is
       Data (1) := UInt8 (Shift_Right (Reg, 8));
       Data (2) := UInt8 (Reg and 16#FF#);
       This.Port.Master_Transmit
-         (Addr   => This.Addr,
-          Data   => Data,
-          Status => This.Bus_Status);
+         (Addr    => This.Addr,
+          Data    => Data,
+          Status  => This.Bus_Status,
+          Timeout => This.Timeout);
       if This.Bus_Status /= Ok then
          This.Status := I2C_Error;
       end if;

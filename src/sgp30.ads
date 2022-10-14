@@ -20,6 +20,7 @@ package SGP30 is
    is tagged record
       Bus_Status : I2C_Status;
       Status     : SGP30_Status := Ok;
+      Timeout    : Natural := 100;
    end record;
 
    function Has_Error
