@@ -59,6 +59,8 @@ package PMS is
    type Frame is array (Field) of UInt16
       with Component_Size => 16;
 
+   subtype Raw_Frame is UART_Data_8b (1 .. Frame'Length * 2);
+
    function Name
       (F : Field)
       return String;
@@ -70,7 +72,12 @@ package PMS is
        Timeout : Natural := 1_000);
 
    function Valid_Checksum
-      (Raw_Data : UInt8_Array)
+      (Data : Raw_Frame)
       return Boolean;
+
+   function To_Frame
+      (Data  : Raw_Frame;
+       Valid : out Boolean)
+       return Frame;
 
 end PMS;

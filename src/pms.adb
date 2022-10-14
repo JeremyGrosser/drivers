@@ -33,20 +33,24 @@ package body PMS is
    end Name;
 
    function Valid_Checksum
-      (Raw_Data : UInt8_Array)
+      (Data : Raw_Frame)
       return Boolean
    is
       Check : UInt16;
       Sum   : UInt16 := 0;
    begin
-      Check := Shift_Left (UInt16 (Raw_Data (Raw_Data'Last - 1)), 8);
-      Check := Check or UInt16 (Raw_Data (Raw_Data'Last));
+      Check := Shift_Left (UInt16 (Data (Data'Last - 1)), 8);
+      Check := Check or UInt16 (Data (Data'Last));
 
-      for I in Raw_Data'First .. Raw_Data'Last - 2 loop
-         Sum := Sum + UInt16 (Raw_Data (I));
+      for I in Data'First .. Data'Last - 2 loop
+         Sum := Sum + UInt16 (Data (I));
       end loop;
       return Sum = Check;
    end Valid_Checksum;
+
+   function Convert is new Ada.Unchecked_Conversion (Raw_Frame, Frame);
+   function Byte_Swap (Word : UInt16) return UInt16
+   is (Shift_Right (Word, 8) or Shift_Left (Word, 8));
 
    procedure Receive
       (Port    : not null Any_UART_Port;
@@ -54,31 +58,33 @@ package body PMS is
        Status  : out UART_Status;
        Timeout : Natural := 1_000)
    is
-      function Byte_Swap (Word : UInt16) return UInt16
-      is (Shift_Right (Word, 8) or Shift_Left (Word, 8));
-
-      subtype Raw_Frame is UART_Data_8b (1 .. Frame'Length * 2);
-      function To_Frame is new Ada.Unchecked_Conversion
-         (Raw_Frame, Frame);
-
-      RF : Raw_Frame;
-      F  : Frame;
+      RF    : Raw_Frame;
+      Valid : Boolean;
    begin
       Port.Receive (RF, Status, Timeout);
       if Status /= Ok then
          return;
       end if;
 
-      if not Valid_Checksum (UInt8_Array (RF)) then
+      Data := To_Frame (RF, Valid);
+      if not Valid then
          Status := Err_Error;
-         return;
       end if;
+   end Receive;
 
-      F := To_Frame (RF);
+   function To_Frame
+      (Data  : Raw_Frame;
+       Valid : out Boolean)
+       return Frame
+   is
+      F : Frame;
+   begin
+      Valid := Valid_Checksum (Data);
+      F := Convert (Data);
       for I in F'Range loop
          F (I) := Byte_Swap (F (I));
       end loop;
-      Data := F;
-   end Receive;
+      return F;
+   end To_Frame;
 
 end PMS;
