@@ -74,6 +74,12 @@ package NRF24L01 is
       (This : Device)
       return Boolean;
 
+   type NRF_Mode is (Idle, Transmitting, Receiving);
+
+   function Mode
+      (This : Device)
+      return NRF_Mode;
+
    procedure Transmit
       (This   : in out Device;
        Addr   : NRF_Address;
@@ -103,8 +109,6 @@ package NRF24L01 is
       (This : in out Device);
 
 private
-
-   type NRF_Mode is (Idle, Transmitting, Receiving);
 
    type Device
       (Port : HAL.SPI.Any_SPI_Port;
