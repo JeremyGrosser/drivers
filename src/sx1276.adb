@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2023 Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 package body SX1276 is
 
    REG_FIFO                   : constant := 16#00#;

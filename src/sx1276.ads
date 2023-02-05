@@ -1,3 +1,9 @@
+--
+--  Copyright (C) 2023 Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
+--  Loosely based on https://github.com/kpierzynski/AVR_LoRa
 private with Chests.Ring_Buffers;
 with HAL; use HAL;
 with HAL.Time;

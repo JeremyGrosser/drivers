@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2022-2023 Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 with Ada.Unchecked_Conversion;
 
 package body ADXL345 is
