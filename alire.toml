@@ -1,10 +1,13 @@
 name = "drivers"
-description = "Random peripheral drivers"
-version = "0.1.0"
+description = ""
+version = "1.0.0"
 
 authors = ["Jeremy Grosser"]
 maintainers = ["Jeremy Grosser <jeremy@synack.me>"]
 maintainers-logins = ["JeremyGrosser"]
+licenses = "BSD-3-Clause"
+website = ""
+tags = []
 
 [[depends-on]]
 hal = "~0.3.0"
@@ -12,3 +15,6 @@ synack_misc = "~0.1.0"
 
 [[pins]]
 synack_misc = { url='https://github.com/JeremyGrosser/synack_misc' }
+
+[build-switches]
+"*".style_checks = ["-gnatyM120"]
