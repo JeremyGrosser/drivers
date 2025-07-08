@@ -39,6 +39,9 @@ is
    procedure Set_Coding_Rate
       (CR : Coding_Rate);
 
+   procedure Set_Sync_Word
+      (Word : HAL.UInt8);
+
    function Last_Packet_RSSI
       return Integer;
 

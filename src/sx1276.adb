@@ -26,6 +26,7 @@ package body SX1276 is
    REG_MODEM_CONFIG_2         : constant := 16#1E#;
    REG_PAYLOAD_LENGTH         : constant := 16#22#;
    REG_MODEM_CONFIG_3         : constant := 16#26#;
+   REG_SYNC_WORD              : constant := 16#39#;
    REG_DIO_MAPPING_1          : constant := 16#40#;
    REG_VERSION                : constant := 16#42#;
    REG_PA_DAC                 : constant := 16#4D#;
@@ -89,12 +90,12 @@ package body SX1276 is
       Write_Reg (REG_FIFO_RX_BASE_ADDR, 0);
 
       --  LNA Boost HF
-      Write_Reg (REG_LNA, Read_Reg (REG_LNA) or 2#11#);
+      Write_Reg (REG_LNA, 2#0010_0011#);
 
       --  LowDataRateOptimize | AgcAutoOn
-      Write_Reg (REG_MODEM_CONFIG_3, 2#100#);
+      Write_Reg (REG_MODEM_CONFIG_3, 2#1100#);
 
-      --  DIO0 is RX_DONE IRQ
+      --  DIO1 is RX_DONE IRQ
       Write_Reg (REG_DIO_MAPPING_1, 16#00#);
 
       Set_Bandwidth (125_000);
@@ -141,6 +142,13 @@ package body SX1276 is
          end loop;
       end if;
    end Interrupt;
+
+   procedure Set_Sync_Word
+      (Word : HAL.UInt8)
+   is
+   begin
+      Write_Reg (REG_SYNC_WORD, Word);
+   end Set_Sync_Word;
 
    procedure Set_Bandwidth
       (BW : Bandwidth)
