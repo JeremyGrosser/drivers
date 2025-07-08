@@ -1,3 +1,8 @@
+--
+--  Copyright (C) 2025 Jeremy Grosser <jeremy@synack.me>
+--
+--  SPDX-License-Identifier: BSD-3-Clause
+--
 package body PCD8544 is
    use HAL;
 
