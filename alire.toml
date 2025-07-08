@@ -10,7 +10,7 @@ website = ""
 tags = []
 
 [[depends-on]]
-hal = "~0.3.0"
+hal = "^1"
 synack_misc = "~0.1.0"
 
 [[pins]]
