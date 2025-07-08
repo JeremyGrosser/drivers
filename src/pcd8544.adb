@@ -28,12 +28,13 @@ package body PCD8544 is
       Write (2#1100_0000#); --  VOP = 64
       Write (2#0010_0010#); --  basic mode, vertical addressing
       Write (2#0000_1100#); --  normal display
-      --  Write (2#0100_0000#); --  y = 0
-      --  Write (2#1000_0000#); --  x = 0
    end Initialize;
 
    procedure Update is
    begin
+      Set_DC (False);
+      Write (2#0100_0000#); --  y = 0
+      Write (2#1000_0000#); --  x = 0
       Set_DC (True);
       for D of Raw loop
          Write (D);
